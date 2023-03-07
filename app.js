@@ -128,8 +128,8 @@ function inputMember() {
   const ui = SpreadsheetApp.getUi();
 
   const idResponse = ui.prompt('Select Member', 'Partial or full email', ui.ButtonSet.OK_CANCEL);
-  if (idResponse.getSelectedButton() != ui.Button.OK) {throw 'Operation canceled';}
-  const id = members.find(member => member.includes(idResponse.getResponseText()));
+  if (idResponse.getSelectedButton() != ui.Button.OK || idResponse.getResponseText() == '') {throw 'Operation canceled';}
+  const id = members.find(member => member.startsWith(idResponse.getResponseText()));
   if (id === undefined) {throw `Member ${idResponse.getResponseText()} not found`;}
 
   return id;
