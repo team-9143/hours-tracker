@@ -11,7 +11,7 @@
 
 const resultSheet = SpreadsheetApp.getActive().getSheetByName('Result Sheet'),
   checkedIn = new Object(),
-  admins = ['edean2025@', 'ftorrano@', 'jgreenbaum2025@', 'jstevens@', 'sthomas2025@'];
+  admins = ['edean2025@', 'jgreenbaum2025@', 'jstevens@', 'sthomas2025@'];
 var members = [];
 
 // Update variables from storage
