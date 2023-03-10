@@ -82,14 +82,8 @@ function checkForTimeout() {
       // Remove check in data to avoid double check-outs
       delete checkedIn[member];
       
-      // Add to the number timeouts
+      // Add to the number of timeouts
       resultSheet.getRange(members.indexOf(member)+2, 4).setValue(resultSheet.getRange(members.indexOf(member)+2, 4).getValue() + 1);
-      const weeklyCell = resultSheet.getRange(members.indexOf(member)+2, 5);
-      if (parseInt(weeklyCell.getNote().split(' ')[1]) >= 1) {
-        weeklyCell.setNote('Timeouts: ' + (parseInt(weeklyCell.getNote().split(' ')[1]) + 1));
-      } else {
-        weeklyCell.setNote('Timeouts: 1');
-      }
     }
   }
 }
