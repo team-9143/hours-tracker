@@ -93,7 +93,7 @@ function addNewMember(id) {
   if (!members.includes(id)) {
     resultSheet.insertRowBefore(2);
     resultSheet.getRange(2,1).setValue(id);
-    resultSheet.getRange(2,2).setValue('=SUM(OFFSET(A2, 0, 4, 1, COLUMNS(2:2)-2))');
+    resultSheet.getRange(2,2).setValue('=SUM(E2:2)');
     resultSheet.getRange(2,4).setValue(0);
     resultSheet.getRange(2, 5).setValue('0:0:0');
     resultSheet.getFilter().sort(2, false);
@@ -166,6 +166,7 @@ function adminCheckIn(t) {
   updateVars();
   const id = inputMember(),
     time = t || Date.now();
+
   if (checkedIn.hasOwnProperty(id)) {checkOut(id, time - checkedIn[id]);}
   resultSheet.getRange(members.indexOf(id)+2, 3).setValue(new Date(time));
   
