@@ -10,24 +10,23 @@
  */
 
 const resultSheet = SpreadsheetApp.getActive().getSheetByName('Result Sheet');
-const checkedIn = new Object();
+var checkedIn = Object.create(null);
 var members = [];
 
-// Update variables from storage
+// Update variables from spreadsheet storage
 function updateVars() {
   // Updates members array with all values in the sheet
-  members = [];
-  const memberList = resultSheet.getRange(2,1, resultSheet.getLastRow()-1).getValues();
-  for (let member of memberList) {members.push(member[0]);}
+  members = []; // Reset array
+  const realMembers = resultSheet.getRange(2,1, resultSheet.getLastRow()-1).getValues(); // Get range of addresses from sheet
+  for (let row of realMembers) {members.push(row[0]);} // Add addresses from sheet to array
 
-  // Updates checkedIn object to include all members with timestamps for check-ins in the sheet, and remove those without
-  const checkInTimes = resultSheet.getRange(2,3, resultSheet.getLastRow()-1).getValues().map(item => item[0]);
+  // Updates checkedIn object to contain members with timestamps for check-ins in the sheet
+  checkedIn = Object.create(null); // Reset object
+  const checkInTimes = resultSheet.getRange(2,3, resultSheet.getLastRow()-1).getValues().map(row => row[0]); // Get array of timestamps from sheet
   checkInTimes.forEach((timestamp, i) => {
-    let member = members[i]
-    if (timestamp === '') {
-      delete checkedIn[member];
-    } else {
-      checkedIn[member] = new Date(timestamp);
+    if (timestamp !== '') {
+      // For all check-in timestamps
+      checkedIn[members[i]] = new Date(timestamp); // Associate timestamps with members
     }
   })
 }
