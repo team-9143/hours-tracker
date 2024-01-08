@@ -9,9 +9,8 @@
  * Run triggers: onFormSubmit, onOpen
  */
 
-const resultSheet = SpreadsheetApp.getActive().getSheetByName('Result Sheet'),
-  checkedIn = new Object(),
-  admins = ['edean2025@', 'jgreenbaum2025@', 'jstevens@', 'sthomas2025@'];
+const resultSheet = SpreadsheetApp.getActive().getSheetByName('Result Sheet');
+const checkedIn = new Object();
 var members = [];
 
 // Update variables from storage
@@ -208,8 +207,9 @@ function adminTimeout() {
 }
 
 function onOpen(e) {
-  // Stop if user's email does not include a string from the admin list
-  if (!admins.find(item => e.user.getEmail().includes(item))) {return;}
+  // Stop if user's email does not match an editor
+  if (!resultSheet.getEditors().find(editor => e.user.getEmail() === editor.getEmail())) {return;}
+
   updateVars();
 
   // Create admin menu
