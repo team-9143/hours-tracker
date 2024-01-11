@@ -34,9 +34,9 @@ var numDataRows: number; // Number of rows with member data
 function updateVars(): void {
   numDataRows = resultSheet.getLastRow() - firstDataRowIndex + 1; // Recalculate number of data rows
 
+  // Get range of addresses from sheet and add to array
   members.length = 0; // Reset array
-  const realMembers: string[][] = resultSheet.getRange(firstDataRowIndex, memberColIndex, numDataRows).getDisplayValues(); // Get range of addresses from sheet
-  realMembers.forEach(row => members.push(row[0])); // Add addresses from sheet to array
+  resultSheet.getRange(firstDataRowIndex, memberColIndex, numDataRows).getDisplayValues().forEach(row => members.push(row[0]));
 }
 
 // Formats a date within a month of the epoch into [HH:MM:SS] with leading zeros and a minus sign if necessary
