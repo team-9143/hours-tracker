@@ -1,9 +1,10 @@
 /*
  * Developed by Siddharth Thomas '2025
  *
- * Creates a custom menu for users with editing permissions to check a member in or out or modify a member's logged time
+ * Creates a custom menu for sheet editors to check a member in or out, time members out, or modify a member's logged time
  *
  * Run triggers: onOpen
+ * Permissions needed: https://www.googleapis.com/auth/spreadsheets.currentonly
  */
 
 // Prompt and find a member address from input, returning the member address if it exists

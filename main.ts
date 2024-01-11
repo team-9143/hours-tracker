@@ -3,7 +3,7 @@
  *
  * Requires a sheet called 'Result Sheet' to store data in, with a sheet-wide filter view
  * Logs the elapsed time between check in and check out by week, timing out after 2 hours, adding notes to describe metadata
- * Takes data from a spreadsheet's form responses in the format: [timestamp, member ID, input('In' or 'Out'), metadata]
+ * Takes data from a spreadsheet's form responses in the format: [timestamp (auto-provided by google), member ID (email or ID string), input('In' or 'Out'), metadata (string)]
  *
  * Run triggers: onFormSubmit; updateTimeouts on each hour
  */
