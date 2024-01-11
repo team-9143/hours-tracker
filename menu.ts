@@ -171,57 +171,14 @@ function adminTimeoutMember(): void {
   ui.alert('Confirmation', `${id} timed out`, ui.ButtonSet.OK);
 }
 
-// Google will prompt user for authorization before this function runs from the menu, this function provides next step instructions for the user
-function authorizeUser(): void {
-  const ui: Base.Ui = SpreadsheetApp.getUi();
-  const userAddr: string = Session.getActiveUser().getEmail();
-
-  if (isEditor(userAddr)) {
-    ui.alert('Success', `User ${userAddr} authorized. Please refresh`, ui.ButtonSet.OK);
-  } else {
-    ui.alert('Failure', `User ${userAddr} is not authorized to edit this sheet`, ui.ButtonSet.OK);
-  }
-}
-
-// Returns true if the given address is an editor of the current spreadsheet
-function isEditor(address: string): boolean {
-  // List of spreadsheet editors
-  const rawList: Base.User[] = SpreadsheetApp.getActiveSpreadsheet().getEditors();
-
-  // Look for given address within spreadsheet editors
-  for (let editor of rawList) {
-    try {
-      if (GroupsApp.getGroupByEmail(editor.getEmail()).hasUser(address)) {
-        // Return true if address is within a group with edit permissions
-        return true;
-      }
-    } catch (error) {
-      // Group likely does not exist, so check email (likely a direct editing permission) against address
-      if (editor.getEmail() === address) {
-        return true;
-      }
-    }
-  }
-
-  // Default to false
-  return false;
-}
-
-// Creates admin menu for sheet editors, runs when the spreadsheet is opened
+// Creates admin menu, runs when the spreadsheet is opened by a sheet editor
 function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  // Create auth menu to prompt for user authorization
-  SpreadsheetApp.getUi().createMenu('Admin Auth')
-    .addItem('Authorize', 'authorizeUser')
+  // Create the admin menu
+  SpreadsheetApp.getUi().createMenu('Admin Settings')
+    .addItem('Check in member', 'adminCheckIn')
+    .addItem('Check out member', 'adminCheckOut')
+    .addItem('Amend hours', 'adminModifyHours')
+    .addItem('Reset timeouts', 'adminResetTimeouts')
+    .addItem('Timeout member', 'adminTimeoutMember')
     .addToUi();
-
-  // If the script is authorized and the user is an editor, create the admin menu
-  if (isEditor(e.user.getEmail())) {
-    SpreadsheetApp.getUi().createMenu('Admin Settings')
-      .addItem('Check in member', 'adminCheckIn')
-      .addItem('Check out member', 'adminCheckOut')
-      .addItem('Amend hours', 'adminModifyHours')
-      .addItem('Reset timeouts', 'adminResetTimeouts')
-      .addItem('Timeout member', 'adminTimeoutMember')
-      .addToUi();
-  }
 }
