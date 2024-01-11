@@ -20,7 +20,7 @@ const timeoutColIndex = 4; // Index of column with timeouts
 const currentWeekColIndex = 5; // Index of column representing current week of logged hours
 
 // Legible date formatter in format [Day HH:MM:SS AM/PM]
-const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'});
+const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: "numeric", minute: '2-digit', second: '2-digit'});
 
 const timeoutReturnTime: Date = new Date(1_800_000); // Time given back after a timeout, 30 minutes
 const timeoutReq: Date = new Date(7_200_000); // Time until an automated timeout is performed, 2 hours
