@@ -6,10 +6,9 @@
  * Run triggers: onOpen
  */
 
-const ui: Base.Ui = SpreadsheetApp.getUi();
-
 // Prompt and find a member address from input, returning the member address if it exists
 function addressFromInput(): string {
+  const ui: Base.Ui = SpreadsheetApp.getUi();
   const input: Base.PromptResponse = ui.prompt('Select Member', 'Start of address', ui.ButtonSet.OK_CANCEL);
   const inputText: string = input.getResponseText();
 
@@ -31,6 +30,7 @@ function addressFromInput(): string {
 // Check in a member from admin input, using admin notees if re-checking in
 function adminCheckIn(): void {
   updateVars();
+  const ui: Base.Ui = SpreadsheetApp.getUi();
   const id: string = addressFromInput();
   const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
 
@@ -51,6 +51,7 @@ function adminCheckIn(): void {
 // Check out a member from admin input with admin notes
 function adminCheckOut(): void {
   updateVars();
+  const ui: Base.Ui = SpreadsheetApp.getUi();
   const id: string = addressFromInput();
   const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
 
@@ -72,6 +73,7 @@ function adminCheckOut(): void {
 // Modify a member's hours by an admin time input with admin notes
 function adminModifyHours() {
   updateVars();
+  const ui: Base.Ui = SpreadsheetApp.getUi();
   const id: string = addressFromInput();
   const input: Base.PromptResponse = ui.prompt('Amend Hours', `${id}\nTime modifier [+/-H:M:S]`, ui.ButtonSet.OK_CANCEL);
   let inputText: string = input.getResponseText();
@@ -113,6 +115,7 @@ function adminModifyHours() {
 // Re-check in all members
 function adminResetTimeouts(): void {
   updateVars();
+  const ui: Base.Ui = SpreadsheetApp.getUi();
   const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, numDataRows).getValues().map(row => row[0]);
   const resets: string[] = [];
 
@@ -142,6 +145,7 @@ function adminResetTimeouts(): void {
 // Timeout a member from admin input
 function adminTimeoutMember(): void {
   updateVars();
+  const ui: Base.Ui = SpreadsheetApp.getUi();
   const id: string = addressFromInput();
   const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
   const checkInCell: Spreadsheet.Range = resultSheet.getRange(rowIndex, checkInColIndex);
@@ -177,7 +181,7 @@ function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   updateVars();
 
   // Create admin menu
-  ui.createMenu('Admin Settings')
+  SpreadsheetApp.getUi().createMenu('Admin Settings')
     .addItem('Check in member', 'adminCheckIn')
     .addItem('Check out member', 'adminCheckOut')
     .addItem('Amend hours', 'adminModifyHours')
