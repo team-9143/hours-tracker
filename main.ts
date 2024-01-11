@@ -77,6 +77,11 @@ function formatMetadata(metadata: string): string {
 function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: string): void {
   const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndex, currentWeekColIndex);
 
+  // If more than a week has passed, create a new column for this week
+  if (Date.now() - resultSheet.getRange(firstDataRowIndex-1, currentWeekColIndex).getValue() > 604_800_000) {
+    startWeek();
+  }
+
   // Create date object from member's logged time and new elapsed time
   // Interpreting the display value here is more coherent than the literal cell value
   const [hours, minutes, seconds]: string[] = logCell.getDisplayValue().split(':');
@@ -173,7 +178,7 @@ function startWeek(): void {
 
   // Create a column headed by the Monday's date and filled with zero times
   resultSheet.insertColumnBefore(currentWeekColIndex); // New column 5 inherits formatting from previous column 5
-  resultSheet.getRange(firstDataRowIndex-1, currentWeekColIndex).setValue(weekStart); // Header set to date of the Monday
+  resultSheet.getRange(firstDataRowIndex-1, currentWeekColIndex).setValue(`${weekStart.getMonth()+1}/${weekStart.getDate()}`); // Set header to date of the Monday
   resultSheet.getRange(firstDataRowIndex, currentWeekColIndex, numDataRows).setValues(new Array<string[]>(numDataRows).fill(['0:0:0'])); // Set column values to 0
 }
 
