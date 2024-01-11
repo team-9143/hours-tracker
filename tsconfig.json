@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+     "noImplicitReturns": true,
+     "noImplicitAny": true,
+     "target": "ES6"
+  }
+}
