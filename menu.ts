@@ -13,7 +13,7 @@ function addressFromInput(): string {
   const inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
-  if (input.getSelectedButton() != ui.Button.OK || inputText === '') {
+  if (input.getSelectedButton() !== ui.Button.OK || inputText === '') {
     throw 'Operation canceled';
   }
 
@@ -79,7 +79,7 @@ function adminModifyHours() {
   let inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
-  if (input.getSelectedButton() != ui.Button.OK || inputText === '') {
+  if (input.getSelectedButton() !== ui.Button.OK || inputText === '') {
     throw 'Operation canceled';
   }
 
