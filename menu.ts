@@ -38,7 +38,7 @@ function adminCheckIn(): void {
   if (!resultSheet.getRange(rowIndex, checkInColIndex).isBlank()) {
     checkOut(
       rowIndex,
-      'Admin nt: ' + ui.prompt('Re-check in notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText()
+      'Admin nt: ' + formatMetadata(ui.prompt('Re-check in notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText())
     );
   }
 
@@ -63,7 +63,7 @@ function adminCheckOut(): void {
   // Check out with admin-provided metadata
   checkOut(
     rowIndex,
-    'Admin nt: ' + ui.prompt('Check out notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText()
+    'Admin nt: ' + formatMetadata(ui.prompt('Check out notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
@@ -104,12 +104,12 @@ function adminModifyHours() {
   addHours(
     members.indexOf(id) + firstDataRowIndex,
     isNegative ? new Date(-time.getTime()) : time,
-    'admin modification',
-    'Admin nt: ' + ui.prompt('Modification notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText()
+    'admin',
+    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
-  ui.alert('Confirmation', `${id} modified by ${isNegative ? '-' : '+'}${(time.getUTCDate()-1)*24 + time.getUTCHours()}:${time.getUTCMinutes()}:${time.getUTCSeconds()}`, ui.ButtonSet.OK);
+  ui.alert('Confirmation', `${id} modified by ${isNegative ? '-' : '+'}${formatElapsedTime(time)}`, ui.ButtonSet.OK);
 }
 
 // Re-check in all members
@@ -160,7 +160,7 @@ function adminTimeoutMember(): void {
     rowIndex,
     timeoutReturnTime,
     'checkin ' + humanDateFormatter.format(checkInCell.getValue()),
-    'Admin timeout nt: ' + ui.prompt('Timeout notes', 'Reason for timeout', ui.ButtonSet.OK).getResponseText()
+    'Admin timeout nt: ' + formatMetadata(ui.prompt('Timeout notes', 'Reason for timeout', ui.ButtonSet.OK).getResponseText())
   );
 
   // Void the check in and increment the timeout counter
