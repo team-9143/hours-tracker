@@ -171,21 +171,33 @@ function adminTimeoutMember(): void {
   ui.alert('Confirmation', `${id} timed out`, ui.ButtonSet.OK);
 }
 
+// Google will prompt user for authorization before this function runs from the menu, this function provides next step instructions for the user
+function authorizeUser(): void {
+  const ui: Base.Ui = SpreadsheetApp.getUi();
+  const userAddr: string = Session.getActiveUser().getEmail();
+
+  if (SpreadsheetApp.getActiveSpreadsheet().getEditors().some(editor => editor.getEmail() === userAddr)) {
+    ui.alert('Success', `User ${userAddr} authorized. Please refresh`, ui.ButtonSet.OK);
+  } else {
+    ui.alert('Failure', `User ${userAddr} is not authorized to edit this sheet`, ui.ButtonSet.OK);
+  }
+}
+
 // Creates admin menu for sheet editors, runs when the spreadsheet is opened
 function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  // Check that user's email matches an editor
-  if (!SpreadsheetApp.getActiveSpreadsheet().getEditors().some(editor => editor.getEmail() === e.user.getEmail())) {
-    return;
-  }
-
-  updateVars();
-
-  // Create admin menu
-  SpreadsheetApp.getUi().createMenu('Admin Settings')
-    .addItem('Check in member', 'adminCheckIn')
-    .addItem('Check out member', 'adminCheckOut')
-    .addItem('Amend hours', 'adminModifyHours')
-    .addItem('Reset timeouts', 'adminResetTimeouts')
-    .addItem('Timeout member', 'adminTimeoutMember')
+  // Create auth menu to prompt for user authorization
+  SpreadsheetApp.getUi().createMenu('Admin Auth')
+    .addItem('Authorize', 'authorizeUser')
     .addToUi();
+
+  // If the script is authorized and the user is an editor, create the admin menu
+  if (SpreadsheetApp.getActiveSpreadsheet().getEditors().some(editor => editor.getEmail() === Session.getActiveUser().getEmail())) {
+    SpreadsheetApp.getUi().createMenu('Admin Settings')
+      .addItem('Check in member', 'adminCheckIn')
+      .addItem('Check out member', 'adminCheckOut')
+      .addItem('Amend hours', 'adminModifyHours')
+      .addItem('Reset timeouts', 'adminResetTimeouts')
+      .addItem('Timeout member', 'adminTimeoutMember')
+      .addToUi();
+  }
 }
