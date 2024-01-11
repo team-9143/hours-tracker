@@ -1,12 +1,15 @@
 /*
  * Developed by Siddharth Thomas '2025
  *
+ * Requires a sheet called 'Result Sheet' to store data in, with a sheet-wide filter view
  * Logs the elapsed time between check in and check out by week, timing out after 2 hours, adding notes to describe metadata
  * Takes data from a spreadsheet's form responses in the format: [timestamp, member ID, input('In' or 'Out'), metadata]
- * Requires a sheet called 'Result Sheet' to store data in, with a sheet-wide filter view
  *
  * Run triggers: onFormSubmit; updateTimeouts on each hour
  */
+
+import Base = GoogleAppsScript.Base;
+import Spreadsheet = GoogleAppsScript.Spreadsheet;
 
 const firstDataRowIndex = 2; // Index of first row with a member address
 
@@ -22,7 +25,7 @@ const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', h
 const timeoutReturnTime: Date = new Date(1_800_000); // Time given back after a timeout, 30 minutes
 const timeoutReq: Date = new Date(7_200_000); // Time until an automated timeout is performed, 2 hours
 
-const resultSheet = SpreadsheetApp.getActive().getSheetByName('Result Sheet'); // Sheet we're working with
+const resultSheet: Spreadsheet.Sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Result Sheet') as Spreadsheet.Sheet; // Sheet we're working with
 
 const members: string[] = []; // Array of members with indexes relative to spreadsheet rows
 var numDataRows: number; // Number of rows with member data
@@ -32,7 +35,7 @@ function updateVars(): void {
   numDataRows = resultSheet.getLastRow() - firstDataRowIndex + 1; // Recalculate number of data rows
 
   members.length = 0; // Reset array
-  const realMembers: any = resultSheet.getRange(firstDataRowIndex, memberColIndex, numDataRows).getValues(); // Get range of addresses from sheet
+  const realMembers: string[][] = resultSheet.getRange(firstDataRowIndex, memberColIndex, numDataRows).getDisplayValues(); // Get range of addresses from sheet
   realMembers.forEach(row => members.push(row[0])); // Add addresses from sheet to array
 }
 
@@ -72,7 +75,7 @@ function formatMetadata(metadata: string): string {
 
 // Adds elapsed time to a row with an annotation in the cell note describing time elapsed and metadata
 function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: string): void {
-  const logCell: any = resultSheet.getRange(rowIndex, currentWeekColIndex);
+  const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndex, currentWeekColIndex);
 
   // Create date object from member's logged time and new elapsed time
   // Interpreting the display value here is more coherent than the literal cell value
@@ -190,10 +193,9 @@ function addMember(id: string): void {
 }
 
 // Handles automated updates, runs when a connected google form is submitted
-function onFormSubmit(e: any): void {
-  let [timestamp, id, input, metadata] = e.values;
-  timestamp = new Date(timestamp);
+function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
   updateVars();
+  const [timestamp, id, input, metadata] = e.values; // Retrieve ordered values from form
 
   // Add a new member if necessary and find relative row index
   let index: number = members.indexOf(id);

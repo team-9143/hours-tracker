@@ -6,11 +6,11 @@
  * Run triggers: onOpen
  */
 
-const ui: any = SpreadsheetApp.getUi();
+const ui: Base.Ui = SpreadsheetApp.getUi();
 
 // Prompt and find a member address from input, returning the member address if it exists
 function addressFromInput(): string {
-  const input: any = ui.prompt('Select Member', 'Start of address', ui.ButtonSet.OK_CANCEL);
+  const input: Base.PromptResponse = ui.prompt('Select Member', 'Start of address', ui.ButtonSet.OK_CANCEL);
   const inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
@@ -73,7 +73,7 @@ function adminCheckOut(): void {
 function adminModifyHours() {
   updateVars();
   const id: string = addressFromInput();
-  const input: any = ui.prompt('Amend Hours', `${id}\nTime modifier [+/-H:M:S]`, ui.ButtonSet.OK_CANCEL);
+  const input: Base.PromptResponse = ui.prompt('Amend Hours', `${id}\nTime modifier [+/-H:M:S]`, ui.ButtonSet.OK_CANCEL);
   let inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
@@ -88,7 +88,7 @@ function adminModifyHours() {
   }
 
   // Create Date object from time input
-  const [hours, minutes, seconds]: string[] = input.split(':');
+  const [hours, minutes, seconds]: string[] = inputText.split(':');
   const time: Date = new Date(
     Number(hours) * 3_600_000 // hours to milliseconds
     + Number(minutes) * 60_000 // minutes to milliseconds
@@ -144,7 +144,7 @@ function adminTimeoutMember(): void {
   updateVars();
   const id: string = addressFromInput();
   const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
-  const checkInCell: any = resultSheet.getRange(rowIndex, checkInColIndex);
+  const checkInCell: Spreadsheet.Range = resultSheet.getRange(rowIndex, checkInColIndex);
 
   // Check that member is checked in
   if (checkInCell.isBlank()) {
@@ -168,9 +168,9 @@ function adminTimeoutMember(): void {
 }
 
 // Creates admin menu for sheet editors, runs when the spreadsheet is opened
-function onOpen(e: any): void {
+function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   // Check that user's email matches an editor
-  if (!resultSheet.getEditors().find(editor => editor.getEmail() === e.user.getEmail())) {
+  if (!SpreadsheetApp.getActiveSpreadsheet().getEditors().some(editor => editor.getEmail() === e.user.getEmail())) {
     return;
   }
 
