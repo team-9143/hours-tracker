@@ -195,13 +195,13 @@ function addMember(id: string): void {
 // Handles automated updates, runs when a connected google form is submitted
 function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
   updateVars();
-  const [timestamp, id, input, metadata] = e.values; // Retrieve ordered values from form
+  const [timestamp, address, input, metadata] = e.values; // Retrieve ordered values from form
 
   // Add a new member if necessary and find relative row index
-  let index: number = members.indexOf(id);
+  let index: number = members.indexOf(address);
   if (index === -1) {
-    addMember(id);
-    index = members.indexOf(id);
+    addMember(address);
+    index = members.indexOf(address);
   }
 
   // If inputting to the form and has been checked in, add hours and metadata and remove check-in
