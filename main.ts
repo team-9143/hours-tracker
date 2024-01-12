@@ -132,7 +132,7 @@ function checkOut(rowIndex: number, metadata: string): void {
 function timeout(rowIndex: number): void {
   const checkInTime: any = resultSheet.getRange(rowIndex, checkInColIndex).getValue();
   // Check that the member is checked in
-  if (checkInTime.getValue() !== '') {
+  if (checkInTime !== '') {
     // Add the time and note
     addHours(
       rowIndex,
@@ -148,7 +148,7 @@ function timeout(rowIndex: number): void {
 
 // Checks all members for timeouts and returns a list of row indexes for those who have passed the required time
 function timeoutCheck(): number[] {
-  const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, numDataRows).getValues().map(row => row[0]);
+  const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, resultSheet.getLastRow() - firstDataRowIndex + 1).getValues().map(row => row[0]);
   const timeoutRowIndexes: number[] = [] // Array to fill with timed out members
 
   checkInTimes.forEach((val, i) => {
@@ -164,6 +164,7 @@ function timeoutCheck(): number[] {
 }
 
 // Times out members who have passed the time requirement
+// Runs outside of other events, watch out for updating variables if needed
 function updateTimeouts(): void {
   timeoutCheck().forEach(rowIndex => timeout(rowIndex));
 }
