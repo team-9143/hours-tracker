@@ -28,18 +28,37 @@ function addressFromInput(): string {
   return id;
 }
 
-// Check in a member from admin input, using admin notees if re-checking in
+// Get the row index from the current selected cell
+function rowIndexFromSelection(): number {
+  let rowIndex: number = SpreadsheetApp.getActiveRange().getRow();
+
+  // Check that selected row is valid for operations
+  if (rowIndex < firstDataRowIndex || rowIndex > resultSheet.getLastRow()) {
+    throw 'Invalid selection, select a row with an address';
+  }
+
+  return rowIndex;
+}
+
+// Check in a member from admin selection, using admin notes if re-checking in
 function adminCheckIn(): void {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const id: string = addressFromInput();
-  const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
+  const rowIndex: number = rowIndexFromSelection();
+  const id: string = resultSheet.getRange(rowIndex, addressColIndex).getDisplayValue();
 
   // If the member is already checked in, add hours and admin-provided metadata
   if (!resultSheet.getRange(rowIndex, checkInColIndex).isBlank()) {
+    let metadata: Base.PromptResponse = ui.prompt('Re-check in notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK_CANCEL);
+
+    // Check for user-side cancelation
+    if (metadata.getSelectedButton() !== ui.Button.OK) {
+      throw 'Operation canceled';
+    }
+
     checkOut(
       rowIndex,
-      'Admin nt: ' + formatMetadata(ui.prompt('Re-check in notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText())
+      'Admin nt: ' + formatMetadata(metadata.getResponseText())
     );
   }
 
@@ -49,12 +68,12 @@ function adminCheckIn(): void {
   ui.alert('Confirmation', `${id} checked in`, ui.ButtonSet.OK);
 }
 
-// Check out a member from admin input with admin notes
+// Check out a member from admin selection with admin notes
 function adminCheckOut(): void {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const id: string = addressFromInput();
-  const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
+  const rowIndex: number = rowIndexFromSelection();
+  const id: string = resultSheet.getRange(rowIndex, addressColIndex).getDisplayValue();
 
   // Check that member is checked in
   if (resultSheet.getRange(rowIndex, checkInColIndex).isBlank()) {
@@ -64,19 +83,19 @@ function adminCheckOut(): void {
   // Check out with admin-provided metadata
   checkOut(
     rowIndex,
-    'Admin nt: ' + formatMetadata(ui.prompt('Check out notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText())
+    'Admin nt: ' + formatMetadata(ui.prompt('Check out notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
   ui.alert('Confirmation', `${id} checked out`, ui.ButtonSet.OK);
 }
 
-// Modify a member's hours by an admin time input with admin notes
+// Modify a member's hours from admin selection by an admin time input with admin notes
 function adminModifyHours() {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const id: string = addressFromInput();
-  const input: Base.PromptResponse = ui.prompt('Amend Hours', `${id}\nTime modifier [+/-H:M:S]`, ui.ButtonSet.OK_CANCEL);
+  const id: string = resultSheet.getRange(rowIndexFromSelection(), addressColIndex).getDisplayValue();
+  const input: Base.PromptResponse = ui.prompt('Amend Hours', id + '\nTime modifier [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
   let inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
@@ -106,7 +125,7 @@ function adminModifyHours() {
     members.indexOf(id) + firstDataRowIndex,
     isNegative ? new Date(-time.getTime()) : time,
     'admin',
-    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', 'Projects/tasks worked on', ui.ButtonSet.OK).getResponseText())
+    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
@@ -117,7 +136,7 @@ function adminModifyHours() {
 function adminResetTimeouts(): void {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, numDataRows).getValues().map(row => row[0]);
+  const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, numDataRows()).getValues().map(row => row[0]);
   const resets: string[] = [];
 
   checkInTimes.forEach((val, i) => {
@@ -143,12 +162,12 @@ function adminResetTimeouts(): void {
   ui.alert('Confirmation', `${resets.length} members have been re-checked in:\n${resets.join(',\n')}`, ui.ButtonSet.OK);
 }
 
-// Timeout a member from admin input
+// Timeout a member from admin selection
 function adminTimeoutMember(): void {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const id: string = addressFromInput();
-  const rowIndex: number = members.indexOf(id) + firstDataRowIndex;
+  const rowIndex: number = rowIndexFromSelection();
+  const id: string = resultSheet.getRange(rowIndex, addressColIndex).getDisplayValue();
   const checkInCell: Spreadsheet.Range = resultSheet.getRange(rowIndex, checkInColIndex);
 
   // Check that member is checked in
@@ -161,7 +180,7 @@ function adminTimeoutMember(): void {
     rowIndex,
     timeoutReturnTime,
     'checkin ' + humanDateFormatter.format(checkInCell.getValue()),
-    'Admin timeout nt: ' + formatMetadata(ui.prompt('Timeout notes', 'Reason for timeout', ui.ButtonSet.OK).getResponseText())
+    'Admin timeout nt: ' + formatMetadata(ui.prompt('Timeout notes', id + '\nReason for timeout', ui.ButtonSet.OK).getResponseText())
   );
 
   // Void the check in and increment the timeout counter
@@ -176,10 +195,10 @@ function adminTimeoutMember(): void {
 function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   // Create the admin menu
   SpreadsheetApp.getUi().createMenu('Admin Settings')
-    .addItem('Check in member', 'adminCheckIn')
-    .addItem('Check out member', 'adminCheckOut')
-    .addItem('Amend hours', 'adminModifyHours')
+    .addItem('Check in selected row', 'adminCheckIn')
+    .addItem('Check out selected row', 'adminCheckOut')
+    .addItem('Amend hours for selected row', 'adminModifyHours')
     .addItem('Reset timeouts', 'adminResetTimeouts')
-    .addItem('Timeout member', 'adminTimeoutMember')
+    .addItem('Timeout selected row', 'adminTimeoutMember')
     .addToUi();
 }

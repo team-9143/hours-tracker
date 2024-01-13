@@ -13,7 +13,7 @@ import Spreadsheet = GoogleAppsScript.Spreadsheet;
 
 const firstDataRowIndex = 2; // Index of first row with a member address
 
-const memberColIndex = 1; // Index of column of member addresses
+const addressColIndex = 1; // Index of column of member addresses
 const totalHoursColIndex = 2; // Index of column of total hours logged
 const checkInColIndex = 3; // Index of column with check in times
 const timeoutColIndex = 4; // Index of column with timeouts
@@ -28,15 +28,13 @@ const timeoutReq: Date = new Date(7_200_000); // Time until an automated timeout
 const resultSheet: Spreadsheet.Sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Result Sheet') as Spreadsheet.Sheet; // Sheet we're working with
 
 const members: string[] = []; // Array of members with indexes relative to spreadsheet rows
-var numDataRows: number; // Number of rows with member data
+const numDataRows: () => number = () => resultSheet.getLastRow() - firstDataRowIndex + 1; // Number of rows with member data
 
 // Updates members array and number of data rows from spreadsheet storage
 function updateVars(): void {
-  numDataRows = resultSheet.getLastRow() - firstDataRowIndex + 1; // Recalculate number of data rows
-
   // Get range of addresses from sheet and add to array
   members.length = 0; // Reset array
-  resultSheet.getRange(firstDataRowIndex, memberColIndex, numDataRows).getDisplayValues().forEach(row => members.push(row[0]));
+  resultSheet.getRange(firstDataRowIndex, addressColIndex, numDataRows()).getDisplayValues().forEach(row => members.push(row[0]));
 }
 
 // Formats a date within a month of the epoch into [HH:MM:SS] with leading zeros and a minus sign if necessary
@@ -148,7 +146,7 @@ function timeout(rowIndex: number): void {
 
 // Checks all members for timeouts and returns a list of row indexes for those who have passed the required time
 function timeoutCheck(): number[] {
-  const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, resultSheet.getLastRow() - firstDataRowIndex + 1).getValues().map(row => row[0]);
+  const checkInTimes: any[] = resultSheet.getRange(firstDataRowIndex, checkInColIndex, numDataRows()).getValues().map(row => row[0]);
   const timeoutRowIndexes: number[] = [] // Array to fill with timed out members
 
   checkInTimes.forEach((val, i) => {
@@ -180,14 +178,14 @@ function startWeek(): void {
   // Create a column headed by the Monday's date and filled with zero times
   resultSheet.insertColumnBefore(currentWeekColIndex); // New column 5 inherits formatting from previous column 5
   resultSheet.getRange(firstDataRowIndex-1, currentWeekColIndex).setValue(`${weekStart.getMonth()+1}/${weekStart.getDate()}`); // Set header to date of the Monday
-  resultSheet.getRange(firstDataRowIndex, currentWeekColIndex, numDataRows).setValues(new Array<string[]>(numDataRows).fill(['0:0:0'])); // Set column values to 0
+  resultSheet.getRange(firstDataRowIndex, currentWeekColIndex, numDataRows()).setValues(new Array<string[]>(numDataRows()).fill(['0:0:0'])); // Set column values to 0
 }
 
 // Adds a new row for a new member, sorts the sheet, and updates variables to match
 function addMember(id: string): void {
   resultSheet.insertRowBefore(firstDataRowIndex); // Create row
   // Initialize row
-  resultSheet.getRange(firstDataRowIndex, memberColIndex).setValue(id);
+  resultSheet.getRange(firstDataRowIndex, addressColIndex).setValue(id);
   resultSheet.getRange(firstDataRowIndex, totalHoursColIndex).setValue(`=SUM(${String.fromCharCode(currentWeekColIndex+64)}${firstDataRowIndex}:${firstDataRowIndex})`);
   resultSheet.getRange(firstDataRowIndex, timeoutColIndex).setValue(0);
   resultSheet.getRange(firstDataRowIndex, currentWeekColIndex).setValue('0:0:0');
