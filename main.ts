@@ -5,7 +5,7 @@
  * Logs the elapsed time between check in and check out by week, timing out after 2 hours, adding notes to describe metadata
  * Takes data from a spreadsheet's form responses in the format: [timestamp (auto-provided by google), member ID (email or ID string), input('In' or 'Out'), metadata (string)]
  *
- * Run triggers: onFormSubmit; updateTimeouts on each hour
+ * Run triggers: onFormSubmit; updateTimeouts on each half-hour
  */
 
 import Base = GoogleAppsScript.Base;
@@ -20,7 +20,7 @@ const timeoutColIndex = 4; // Index of column with timeouts
 const currentWeekColIndex = 5; // Index of column representing current week of logged hours
 
 // Legible date formatter in format [Day HH:MM:SS AM/PM]
-const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: "numeric", minute: '2-digit', second: '2-digit'});
+const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit'});
 
 const timeoutReturnTime: Date = new Date(1_800_000); // Time given back after a timeout, 30 minutes
 const timeoutReq: Date = new Date(7_200_000); // Time until an automated timeout is performed, 2 hours
@@ -213,5 +213,28 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
   // If checking in, add timestamp to sheet
   if (input === 'In') {
     checkIn(index + firstDataRowIndex);
+  }
+}
+
+// Reset unauthorized changes, when possible
+function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
+  const ui: Base.Ui = SpreadsheetApp.getUi();
+  const range: Spreadsheet.Range = e.range;
+
+  // Check for multi-cell changes (cannot reset these)
+  if (range.getNumColumns() !== 1 || range.getNumRows() !== 1) {
+    ui.alert('Potential Change Error', 'Please edit only one cell at a time or use the admin menu', ui.ButtonSet.OK);
+    return;
+  }
+
+  // If the edited cell is not within the allowed columns, reset the value
+  if (!(range.getColumn() === checkInColIndex || range.getColumn() === timeoutColIndex)) {
+    // If the edited cell used to be empty, the change is likely to fix a problem
+    if (e.oldValue === undefined) {
+      return;
+    }
+
+    range.setValue(e.oldValue); // Set value to old value
+    ui.alert('Change Undone', 'Please use the admin menu instead of making changes by hand', ui.ButtonSet.OK); // Send message to explain change
   }
 }
