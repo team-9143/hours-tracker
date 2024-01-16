@@ -186,7 +186,9 @@ function addMember(id: string): void {
   resultSheet.insertRowBefore(firstDataRowIndex); // Create row
   // Initialize row
   resultSheet.getRange(firstDataRowIndex, addressColIndex).setValue(id);
-  resultSheet.getRange(firstDataRowIndex, totalHoursColIndex).setValue(`=SUM(${String.fromCharCode(currentWeekColIndex+64)}${firstDataRowIndex}:${firstDataRowIndex})`);
+  resultSheet.getRange(firstDataRowIndex, totalHoursColIndex).setValue(
+    `=SUM(INDIRECT(CONCATENATE("${String.fromCharCode(currentWeekColIndex+64)}",ROW(),":",ROW())))`
+  );
   resultSheet.getRange(firstDataRowIndex, timeoutColIndex).setValue(0);
   resultSheet.getRange(firstDataRowIndex, currentWeekColIndex).setValue('0:0:0');
 
