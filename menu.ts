@@ -40,6 +40,36 @@ function rowIndexFromSelection(): number {
   return rowIndex;
 }
 
+function hoursFromInput(header: string, id: string): Date {
+  const ui: Base.Ui = SpreadsheetApp.getUi();
+  const input: Base.PromptResponse = ui.prompt(header, id + '\nTime modifier [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
+  let inputText: string = input.getResponseText();
+
+  // Check for user-side cancelation
+  if (input.getSelectedButton() !== ui.Button.OK || inputText === '') {
+    throw 'Operation canceled';
+  }
+
+  // Remove first non-NaN character from the input and set isNegative if input starts with a '-'
+  const isNegative: boolean = inputText.charAt(0) === '-';
+  if (isNaN(Number(inputText.charAt(0)))) {
+    inputText = inputText.substring(1);
+  }
+
+  // Create Date object from time input
+  const [hours, minutes, seconds]: string[] = inputText.split(':');
+  const time: Date = new Date(
+    Number(hours) * 3_600_000 // hours to milliseconds
+    + Number(minutes) * 60_000 // minutes to milliseconds
+    + Number(seconds) * 1_000 // seconds to milliseconds
+  );
+
+  // Check for invalid time input
+  if (time.toString() === 'Invalid Date') {throw 'Invalid time input';}
+
+  return isNegative ? new Date(-time.getTime()) : time;
+}
+
 // Check in a member from admin selection, using admin notes if re-checking in
 function adminCheckIn(): void {
   updateVars();
@@ -95,41 +125,25 @@ function adminModifyHours() {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
   const id: string = resultSheet.getRange(rowIndexFromSelection(), addressColIndex).getDisplayValue();
-  const input: Base.PromptResponse = ui.prompt('Amend Hours', id + '\nTime modifier [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
-  let inputText: string = input.getResponseText();
 
-  // Check for user-side cancelation
-  if (input.getSelectedButton() !== ui.Button.OK || inputText === '') {
-    throw 'Operation canceled';
-  }
-
-  // Remove first non-NaN character from the input and set isNegative if input starts with a '-'
-  const isNegative: boolean = inputText.charAt(0) === '-';
-  if (isNaN(Number(inputText.charAt(0)))) {
-    inputText = inputText.substring(1);
-  }
-
-  // Create Date object from time input
-  const [hours, minutes, seconds]: string[] = inputText.split(':');
-  const time: Date = new Date(
-    Number(hours) * 3_600_000 // hours to milliseconds
-    + Number(minutes) * 60_000 // minutes to milliseconds
-    + Number(seconds) * 1_000 // seconds to milliseconds
-  );
-
-  // Check for invalid time input
-  if (time.toString() === 'Invalid Date') {throw 'Invalid time input';}
+  let modifier = hoursFromInput('Amend Hours', id);
 
   // Add hours, with negative if applicable
   addHours(
     members.indexOf(id) + firstDataRowIndex,
-    isNegative ? new Date(-time.getTime()) : time,
+    modifier,
     'admin',
     'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
-  ui.alert('Confirmation', `${id} modified by ${isNegative ? '-' : '+'}${formatElapsedTime(time)}`, ui.ButtonSet.OK);
+  let confirmation: string;
+  if (modifier.getTime() < 0) {
+    confirmation = '-' + formatElapsedTime(new Date(-modifier.getTime()));
+  } else {
+    confirmation = '+' + formatElapsedTime(modifier);
+  }
+  ui.alert('Confirmation', `${id} modified by ${confirmation}`, ui.ButtonSet.OK);
 }
 
 // Re-check in all members
