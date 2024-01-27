@@ -54,7 +54,7 @@ function colIndexFromSelection(): number {
 
 function hoursFromInput(header: string, id: string): Date {
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const input: Base.PromptResponse = ui.prompt(header, id + '\nTime modifier [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
+  const input: Base.PromptResponse = ui.prompt(header, id + '\nTime input [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
   let inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
@@ -137,8 +137,7 @@ function adminModifyHours() {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
   const id: string = resultSheet.getRange(rowIndexFromSelection(), addressColIndex).getDisplayValue();
-
-  let modifier = hoursFromInput('Amend Hours', id);
+  const modifier = hoursFromInput('Amend Hours', id);
 
   // Add hours, with negative if applicable
   addHours(
