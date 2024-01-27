@@ -44,7 +44,7 @@ function rowIndexFromSelection(): number {
 function colIndexFromSelection(): number {
   let colIndex: number = SpreadsheetApp.getActiveRange().getColumn();
 
-  // Check that selected row is valid for operations
+  // Check that selected column is valid for operations
   if (colIndex < currentWeekColIndex) {
     throw 'Invalid selection, select a column with a weekly hour entry';
   }
@@ -216,6 +216,43 @@ function adminTimeoutMember(): void {
   ui.alert('Confirmation', `${id} timed out`, ui.ButtonSet.OK);
 }
 
+// Increase a member's hours to a set time for a week with a note explaining why
+function adminExemptFromWeek(): void {
+  const ui: Base.Ui = SpreadsheetApp.getUi();
+  const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndexFromSelection(), colIndexFromSelection());
+  const id: string = resultSheet.getRange(logCell.getRow(), addressColIndex).getDisplayValue();
+  const week: string = resultSheet.getRange(headerRowIndex, logCell.getColumn()).getDisplayValue();
+  const target: Date = hoursFromInput('Target Hours (please fill out after end of week)', `${id} for week of ${week}`);
+
+  // Create date object with a minimum of target time
+  // Interpreting the display value here is more coherent than the literal cell value
+  const [hours, minutes, seconds]: string[] = logCell.getDisplayValue().split(':');
+  const time: Date = new Date(
+    Number(hours) * 3_600_000 // hours to milliseconds
+    + Number(minutes) * 60_000 // minutes to milliseconds
+    + Number(seconds) * 1_000 // seconds to milliseconds
+  );
+
+  if (time.getTime() >= target.getTime()) {
+    throw 'Member has already exceeded this hour requirement';
+  }
+
+  time.setTime(target.getTime());
+
+  // Send date object to cell in format [HH:MM:SS]
+  logCell.setValue(formatElapsedTime(time));
+
+  // Send metadata to cell note in new line in format 'Set to [HH:MM:SS] for exemption for:\n[metadata]'
+  logCell.setNote(
+    `Set ${formatElapsedTime(time)} for exemption for:\n`
+    + formatMetadata(ui.prompt('Exemption notes', `${id} for week of ${week}\nReason for exemption`, ui.ButtonSet.OK).getResponseText())
+    + logCell.getNote()
+  );
+
+  // Confirmation message
+  ui.alert('Confirmation', `${id} exempted from week of ${week} with ${formatElapsedTime(time)}`, ui.ButtonSet.OK);
+}
+
 // Creates admin menu, runs when the spreadsheet is opened by a sheet editor
 function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   // Create the admin menu
@@ -225,5 +262,6 @@ function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
     .addItem('Amend hours for selected row', 'adminModifyHours')
     .addItem('Reset timeouts', 'adminResetTimeouts')
     .addItem('Timeout selected row', 'adminTimeoutMember')
+    .addItem('Exempt selected cell', 'adminExemptFromWeek')
     .addToUi();
 }

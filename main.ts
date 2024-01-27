@@ -12,6 +12,7 @@ import Base = GoogleAppsScript.Base;
 import Spreadsheet = GoogleAppsScript.Spreadsheet;
 
 const firstDataRowIndex = 2; // Index of first row with a member address
+const headerRowIndex = 1; // Index of first row with a member address
 
 const addressColIndex = 1; // Index of column of member addresses
 const totalHoursColIndex = 2; // Index of column of total hours logged
