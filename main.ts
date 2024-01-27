@@ -5,7 +5,7 @@
  * Logs the elapsed time between check in and check out by week, timing out after 2 hours, adding notes to describe metadata
  * Takes data from a spreadsheet's form responses in the format: [timestamp (auto-provided by google), member ID (email or ID string), input('In' or 'Out'), metadata (string)]
  *
- * Run triggers: onFormSubmit; updateTimeouts on each half-hour
+ * Run triggers: onFormSubmit; onEdit; updateTimeouts on each half-hour
  */
 
 import Base = GoogleAppsScript.Base;
@@ -221,22 +221,5 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
 // Reset unauthorized changes, when possible
 function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const range: Spreadsheet.Range = e.range;
-
-  // Check for multi-cell changes (cannot reset these)
-  if (range.getNumColumns() !== 1 || range.getNumRows() !== 1) {
-    ui.alert('Potential Change Error', 'Please edit only one cell at a time or use the admin menu', ui.ButtonSet.OK);
-    return;
-  }
-
-  // If the edited cell is not within the allowed columns, reset the value
-  if (!(range.getColumn() === checkInColIndex || range.getColumn() === timeoutColIndex)) {
-    // If the edited cell used to be empty, the change is likely to fix a problem
-    if (e.oldValue === undefined) {
-      return;
-    }
-
-    range.setValue(e.oldValue); // Set value to old value
-    ui.alert('Change Undone', 'Please use the admin menu instead of making changes by hand', ui.ButtonSet.OK); // Send message to explain change
-  }
+  ui.alert('Potential Change Error', 'Please undo and use the admin menu instead of making changes by hand', ui.ButtonSet.OK); // Send message to explain change
 }
