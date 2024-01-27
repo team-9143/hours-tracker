@@ -40,6 +40,18 @@ function rowIndexFromSelection(): number {
   return rowIndex;
 }
 
+// Get the week column index from the current selected cell
+function colIndexFromSelection(): number {
+  let colIndex: number = SpreadsheetApp.getActiveRange().getColumn();
+
+  // Check that selected row is valid for operations
+  if (colIndex < currentWeekColIndex) {
+    throw 'Invalid selection, select a column with a weekly hour entry';
+  }
+
+  return colIndex;
+}
+
 function hoursFromInput(header: string, id: string): Date {
   const ui: Base.Ui = SpreadsheetApp.getUi();
   const input: Base.PromptResponse = ui.prompt(header, id + '\nTime modifier [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
