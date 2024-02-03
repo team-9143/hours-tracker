@@ -101,6 +101,7 @@ function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: 
   // Create date object from member's logged time and new elapsed time
   // Interpreting the display value here is more coherent than the literal cell value
   const time: Date = durationToDate(logCell.getDisplayValue());
+  time.setTime(time.getTime() + elapsed.getTime());
 
   // Check that logged time is valid
   if (time.toString() === 'Invalid Date') {throw 'Invalid logged hours';}
