@@ -25,7 +25,7 @@ const currentWeekColIndex = 6; // Index of column representing current week of l
 const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit'});
 
 const timeoutReturnTime: Date = new Date(1_800_000); // Time given back after a timeout (30 minutes)
-const timeoutReq: Date = new Date(10_800_000); // Time until an automated timeout is performed (3 hours)
+const timeoutReq: Date = new Date(11_700_000); // Time until an automated timeout is performed (3.25 hours)
 
 const resultSheet: Spreadsheet.Sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Result Sheet') as Spreadsheet.Sheet; // Sheet we're working with
 
