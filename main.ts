@@ -16,10 +16,11 @@ const headerRowIndex = 1; // Index of first row with a member address
 
 const addressColIndex = 1; // Index of column of member addresses
 const totalHoursColIndex = 2; // Index of column of total hours logged
-const missedHoursColIndex = 3; // Index of column with hours required to meet active status
-const checkInColIndex = 4; // Index of column with check in times
-const timeoutColIndex = 5; // Index of column with timeout counter
-const currentWeekColIndex = 6; // Index of column representing current week of logged hours
+const missedHoursColIndex = 3; // Index of column with additional hours needed to meet active status
+const hourReqColIndex = 4; // Index of column with required hours per week
+const checkInColIndex = 5; // Index of column with check in times
+const timeoutColIndex = 6; // Index of column with timeout counter
+const currentWeekColIndex = 7; // Index of column representing current week of logged hours
 
 // Legible date formatter in format [Day HH:MM:SS AM/PM]
 const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit'});
