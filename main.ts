@@ -212,7 +212,7 @@ function addMember(id: string): void {
   resultSheet.getRange(firstDataRowIndex, totalHoursColIndex).setValue(
     `=SUM(INDIRECT("${String.fromCharCode(currentWeekColIndex+64)}"&ROW()&":"&ROW()))`
   );
-  resultSheet.getRange(firstDataRowIndex, missedHoursColIndex).setValue('=GET_MISSED_HOURS');
+  resultSheet.getRange(firstDataRowIndex, missedHoursColIndex).setValue('=IFERROR(GET_MISSED_HOURS(ROW()), "Loading...")');
   resultSheet.getRange(firstDataRowIndex, hourReqColIndex).setValue('6:0:0');
   resultSheet.getRange(firstDataRowIndex, timeoutColIndex).setValue(0);
   resultSheet.getRange(firstDataRowIndex, currentWeekColIndex).setValue('0:0:0');
