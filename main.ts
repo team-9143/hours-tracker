@@ -5,7 +5,7 @@
  * Logs the elapsed time between check in and check out by week, timing out after 2 hours, adding notes to describe metadata
  * Takes data from a spreadsheet's form responses in the format: [timestamp (auto-provided by google), member ID (email or ID string), input('In' or 'Out'), metadata (string)]
  *
- * Run triggers: onFormSubmit; onEdit; updateTimeouts on each half-hour
+ * Run triggers: onFormSubmit; onEdit; updateTimeouts on each quarter-hour
  */
 
 import Base = GoogleAppsScript.Base;

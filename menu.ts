@@ -1,7 +1,7 @@
 /*
  * Developed by Siddharth Thomas '2025
  *
- * Creates a custom menu for sheet editors to check a member in or out, time members out, or modify a member's logged time
+ * Creates a custom menu for sheet editors to check a member in or out, time members out, modify a member's logged time, or exempt members from a certain week of hour requirements
  *
  * Run triggers: onOpen
  * Permissions needed: https://www.googleapis.com/auth/spreadsheets.currentonly
