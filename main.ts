@@ -236,7 +236,7 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
 // Reset unauthorized changes, when possible
 function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  if (SpreadsheetApp.getActiveRange().getRow() < firstDataRowIndex || SpreadsheetApp.getActiveRange().getColumn() <= missedHoursColIndex || SpreadsheetApp.getActiveRange().getColumn() >= currentWeekColIndex) {
+  if (SpreadsheetApp.getActiveRange().getRow() < firstDataRowIndex || SpreadsheetApp.getActiveRange().getColumn() < hourReqColIndex || SpreadsheetApp.getActiveRange().getColumn() > timeoutColIndex) {
     ui.alert('Potential Change Error', 'Please undo and use the admin menu instead of making changes by hand', ui.ButtonSet.OK); // Send message to explain change
   }
 }
