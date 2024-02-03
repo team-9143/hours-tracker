@@ -212,6 +212,8 @@ function adminTimeoutMember(): void {
   checkInCell.setValue('');
   resultSheet.getRange(rowIndex, timeoutColIndex).setValue(resultSheet.getRange(rowIndex, timeoutColIndex).getValue() + 1);
 
+  SpreadsheetApp.flush();
+
   // Confirmation message
   ui.alert('Confirmation', `${id} timed out`, ui.ButtonSet.OK);
 }
@@ -239,15 +241,18 @@ function adminExemptFromWeek(): void {
 
   time.setTime(target.getTime());
 
-  // Send date object to cell in format [HH:MM:SS]
-  logCell.setValue(formatElapsedTime(time));
-
   // Send metadata to cell note in new line in format 'Set to [HH:MM:SS] for exemption for:\n[metadata]'
   logCell.setNote(
     `Set ${formatElapsedTime(time)} for exemption for:\n`
     + formatMetadata(ui.prompt('Exemption notes', `${id} for week of ${week}\nReason for exemption`, ui.ButtonSet.OK).getResponseText())
     + logCell.getNote()
   );
+
+  // Send date object to cell in format [HH:MM:SS]
+  // Comes after note to avoid synchronizing issues if previous user prompt is aborted
+  logCell.setValue(formatElapsedTime(time));
+
+  SpreadsheetApp.flush();
 
   // Confirmation message
   ui.alert('Confirmation', `${id} exempted from week of ${week} with ${formatElapsedTime(time)}`, ui.ButtonSet.OK);

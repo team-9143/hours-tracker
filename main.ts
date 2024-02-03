@@ -16,9 +16,10 @@ const headerRowIndex = 1; // Index of first row with a member address
 
 const addressColIndex = 1; // Index of column of member addresses
 const totalHoursColIndex = 2; // Index of column of total hours logged
-const checkInColIndex = 3; // Index of column with check in times
-const timeoutColIndex = 4; // Index of column with timeouts
-const currentWeekColIndex = 5; // Index of column representing current week of logged hours
+const missedHoursColIndex = 3; // Index of column with hours required to meet active status
+const checkInColIndex = 4; // Index of column with check in times
+const timeoutColIndex = 5; // Index of column with timeout counter
+const currentWeekColIndex = 6; // Index of column representing current week of logged hours
 
 // Legible date formatter in format [Day HH:MM:SS AM/PM]
 const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit'});
@@ -104,11 +105,15 @@ function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: 
     + `Logged ${formatElapsedTime(elapsed)} from ${callStack} for:\n`
     + formatMetadata(metadata)
   );
+
+  SpreadsheetApp.flush();
 }
 
 // Checks in a row with the current time
 function checkIn(rowIndex: number): void {
   resultSheet.getRange(rowIndex, checkInColIndex).setValue(new Date());
+
+  SpreadsheetApp.flush();
 }
 
 // If a row is checked in, checks it out and logs the elapsed time and metadata
@@ -124,6 +129,8 @@ function checkOut(rowIndex: number, metadata: string): void {
       metadata
     );
     resultSheet.getRange(rowIndex, checkInColIndex).setValue(''); // Remove check in data
+
+    SpreadsheetApp.flush();
   }
 }
 
@@ -142,6 +149,8 @@ function timeout(rowIndex: number): void {
     // Void the check in and increment the timeout counter
     resultSheet.getRange(rowIndex, checkInColIndex).setValue('');
     resultSheet.getRange(rowIndex, timeoutColIndex).setValue(resultSheet.getRange(rowIndex, timeoutColIndex).getValue() + 1);
+
+    SpreadsheetApp.flush();
   }
 }
 
@@ -180,6 +189,8 @@ function startWeek(): void {
   resultSheet.insertColumnBefore(currentWeekColIndex); // New column 5 inherits formatting from previous column 5
   resultSheet.getRange(firstDataRowIndex-1, currentWeekColIndex).setValue(`${weekStart.getMonth()+1}/${weekStart.getDate()}`); // Set header to date of the Monday
   resultSheet.getRange(firstDataRowIndex, currentWeekColIndex, numDataRows()).setValues(new Array<string[]>(numDataRows()).fill(['0:0:0'])); // Set column values to 0
+
+  SpreadsheetApp.flush();
 }
 
 // Adds a new row for a new member, sorts the sheet, and updates variables to match
@@ -197,6 +208,8 @@ function addMember(id: string): void {
 
   // Update variables to account for change in spreadsheet
   updateVars();
+
+  SpreadsheetApp.flush();
 }
 
 // Handles automated updates, runs when a connected google form is submitted
