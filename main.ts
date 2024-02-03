@@ -61,6 +61,21 @@ function formatElapsedTime(date: Date): string {
     + (seconds < 10 ? '0'+seconds : seconds);
 }
 
+// Turns a duration string into a Date object
+function durationToDate(duration: string): Date {
+  const [hours, minutes, seconds]: string[] = duration.split(':');
+
+  const time = new Date(
+    Number(hours) * 3_600_000 // hours to milliseconds
+    + Number(minutes) * 60_000 // minutes to milliseconds
+    + Number(seconds) * 1_000 // seconds to milliseconds
+  );
+
+  if (time.toString() === 'Invalid Date') {throw 'Invalid duration';}
+
+  return time;
+}
+
 // Formats user-input metadata for consistency
 function formatMetadata(metadata: string): string {
   metadata = metadata.trim();
@@ -85,15 +100,9 @@ function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: 
 
   // Create date object from member's logged time and new elapsed time
   // Interpreting the display value here is more coherent than the literal cell value
-  const [hours, minutes, seconds]: string[] = logCell.getDisplayValue().split(':');
-  const time: Date = new Date(
-    Number(hours) * 3_600_000 // hours to milliseconds
-    + Number(minutes) * 60_000 // minutes to milliseconds
-    + Number(seconds) * 1_000 // seconds to milliseconds
-    + elapsed.getTime() // Add elapsed time to logged time
-  );
+  const time: Date = durationToDate(logCell.getDisplayValue());
 
-  // Check that old and new logged times are valid
+  // Check that logged time is valid
   if (time.toString() === 'Invalid Date') {throw 'Invalid logged hours';}
   if (time.getTime() < 0) {throw 'Cannot log a negative number of hours';}
 
@@ -202,6 +211,8 @@ function addMember(id: string): void {
   resultSheet.getRange(firstDataRowIndex, totalHoursColIndex).setValue(
     `=SUM(INDIRECT("${String.fromCharCode(currentWeekColIndex+64)}"&ROW()&":"&ROW()))`
   );
+  resultSheet.getRange(firstDataRowIndex, missedHoursColIndex).setValue('=GET_MISSED_HOURS');
+  resultSheet.getRange(firstDataRowIndex, hourReqColIndex).setValue('6:0:0');
   resultSheet.getRange(firstDataRowIndex, timeoutColIndex).setValue(0);
   resultSheet.getRange(firstDataRowIndex, currentWeekColIndex).setValue('0:0:0');
 
