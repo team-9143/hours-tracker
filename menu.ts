@@ -150,7 +150,7 @@ function adminModifyHours() {
     members.indexOf(id) + firstDataRowIndex,
     modifier,
     'admin',
-    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', id + formatElapsedTime(modifier) + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
+    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', `${id}\n${formatElapsedTime(modifier)}\nProjects/tasks worked on`, ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
