@@ -121,7 +121,7 @@ function adminCheckOut(): void {
     throw `Member ${id} is not checked in`;
   }
 
-  const metadata: Base.PromptResponse = ui.prompt('Check out notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK);
+  const metadata: Base.PromptResponse = ui.prompt('Check out notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK_CANCEL);
 
   // Check for user-side cancelation
   if (metadata.getSelectedButton() !== ui.Button.OK) {
@@ -145,12 +145,19 @@ function adminModifyHours() {
   const id: string = resultSheet.getRange(rowIndexFromSelection(), addressColIndex).getDisplayValue();
   const modifier = hoursFromInput('Amend Hours', id);
 
+  const metadata: Base.PromptResponse = ui.prompt('Modification notes', `${id}\n${formatElapsedTime(modifier)}\nProjects/tasks worked on`, ui.ButtonSet.OK_CANCEL);
+
+  // Check for user-side cancelation
+  if (metadata.getSelectedButton() !== ui.Button.OK) {
+    throw 'Operation canceled';
+  }
+
   // Add hours, with negative if applicable
   addHours(
     members.indexOf(id) + firstDataRowIndex,
     modifier,
     'admin',
-    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', `${id}\n${formatElapsedTime(modifier)}\nProjects/tasks worked on`, ui.ButtonSet.OK).getResponseText())
+    'Admin nt: ' + formatMetadata(metadata.getResponseText())
   );
 
   // Confirmation message
