@@ -23,7 +23,7 @@ const timeoutColIndex = 6; // Index of column with timeout counter
 const currentWeekColIndex = 7; // Index of column representing current week of logged hours
 
 // Legible date formatter in format [Day HH:MM:SS AM/PM]
-const humanDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit'});
+const timeDateFormatter = new Intl.DateTimeFormat('en-us', {weekday: 'short', hour: 'numeric', minute: '2-digit', second: '2-digit'});
 
 const timeoutReturnTime: Date = new Date(1_800_000); // Time given back after a timeout (30 minutes)
 const timeoutReq: Date = new Date(11_700_000); // Time until an automated timeout is performed (3.25 hours)
@@ -42,17 +42,14 @@ function updateVars(): void {
 
 // Formats a date within a month of the epoch into [HH:MM:SS] with leading zeros and a minus sign if necessary
 function formatElapsedTime(date: Date): string {
-  // If the date is negative, treat it as a positive date and add the negative later
-  let isNegative: boolean = false;
-  if (date.getTime() < 0) {
-    date.setTime(-date.getTime());
-    isNegative = true;
-  }
+  // If the date is negative, treat it as a positive date and add the '-' later
+  let isNegative: boolean = (date.getTime() < 0) ? true : false;
+  let localDate: Date = new Date((isNegative) ? -date.getTime() : date.getTime()); // Localized variable so that argument object is not changed
 
   // Initialize specific time variables from date
-  const hours: number = (date.getUTCDate()-1)*24 + date.getUTCHours();
-  const minutes: number = date.getUTCMinutes();
-  const seconds: number = date.getUTCSeconds();
+  const hours: number = (localDate.getUTCDate()-1)*24 + localDate.getUTCHours();
+  const minutes: number = localDate.getUTCMinutes();
+  const seconds: number = localDate.getUTCSeconds();
 
   // Add minus sign and leading zeroes and return
   return (isNegative ? '-' : '')
@@ -136,7 +133,7 @@ function checkOut(rowIndex: number, metadata: string): void {
     addHours(
       rowIndex,
       new Date(Date.now() - checkInTime.getTime()),
-      'checkin ' + humanDateFormatter.format(checkInTime),
+      'checkin ' + timeDateFormatter.format(checkInTime),
       metadata
     );
     resultSheet.getRange(rowIndex, checkInColIndex).setValue(''); // Remove check in data
@@ -154,7 +151,7 @@ function timeout(rowIndex: number): void {
     addHours(
       rowIndex,
       timeoutReturnTime,
-      'checkin ' + humanDateFormatter.format(checkInTime),
+      'checkin ' + timeDateFormatter.format(checkInTime),
       'Timeout'
     );
     // Void the check in and increment the timeout counter

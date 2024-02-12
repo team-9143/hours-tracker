@@ -54,7 +54,7 @@ function colIndexFromSelection(): number {
 
 function hoursFromInput(header: string, id: string): Date {
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const input: Base.PromptResponse = ui.prompt(header, id + '\nTime input [+/-H:M:S]', ui.ButtonSet.OK_CANCEL);
+  const input: Base.PromptResponse = ui.prompt(header, id + '\nTime input [+/-H:M]', ui.ButtonSet.OK_CANCEL);
   let inputText: string = input.getResponseText();
 
   // Check for user-side cancelation
@@ -69,11 +69,10 @@ function hoursFromInput(header: string, id: string): Date {
   }
 
   // Create Date object from time input
-  const [hours, minutes, seconds]: string[] = inputText.split(':');
+  const [hours, minutes]: string[] = inputText.split(':');
   const time: Date = new Date(
     Number(hours) * 3_600_000 // hours to milliseconds
     + Number(minutes) * 60_000 // minutes to milliseconds
-    + Number(seconds) * 1_000 // seconds to milliseconds
   );
 
   // Check for invalid time input
@@ -122,10 +121,17 @@ function adminCheckOut(): void {
     throw `Member ${id} is not checked in`;
   }
 
+  const metadata: Base.PromptResponse = ui.prompt('Check out notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK);
+
+  // Check for user-side cancelation
+  if (metadata.getSelectedButton() !== ui.Button.OK) {
+    throw 'Operation canceled';
+  }
+
   // Check out with admin-provided metadata
   checkOut(
     rowIndex,
-    'Admin nt: ' + formatMetadata(ui.prompt('Check out notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
+    'Admin nt: ' + formatMetadata(metadata.getResponseText())
   );
 
   // Confirmation message
@@ -144,7 +150,7 @@ function adminModifyHours() {
     members.indexOf(id) + firstDataRowIndex,
     modifier,
     'admin',
-    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', id + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
+    'Admin nt: ' + formatMetadata(ui.prompt('Modification notes', id + formatElapsedTime(modifier) + '\nProjects/tasks worked on', ui.ButtonSet.OK).getResponseText())
   );
 
   // Confirmation message
@@ -171,7 +177,7 @@ function adminResetTimeouts(): void {
       addHours(
         i + firstDataRowIndex,
         new Date(Date.now() - val.getTime()),
-        'checkin ' + humanDateFormatter.format(val),
+        'checkin ' + timeDateFormatter.format(val),
         'Admin timeout reset'
       );
 
@@ -204,7 +210,7 @@ function adminTimeoutMember(): void {
   addHours(
     rowIndex,
     timeoutReturnTime,
-    'checkin ' + humanDateFormatter.format(checkInCell.getValue()),
+    'checkin ' + timeDateFormatter.format(checkInCell.getValue()),
     'Admin timeout nt: ' + formatMetadata(ui.prompt('Timeout notes', id + '\nReason for timeout', ui.ButtonSet.OK).getResponseText())
   );
 
