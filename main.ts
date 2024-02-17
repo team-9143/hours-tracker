@@ -87,7 +87,7 @@ function formatMetadata(metadata: string): string {
 }
 
 // Adds elapsed time to a row with an annotation in the cell note describing time elapsed and metadata
-function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: string): void {
+function addHours(rowIndex: number, elapsed: Date, inShop: boolean, callStack: string, metadata: string): void {
   const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndex, currentWeekColIndex);
 
   // If more than a week has passed, create a new column for this week
@@ -104,13 +104,21 @@ function addHours(rowIndex: number, elapsed: Date, callStack: string, metadata: 
   if (time.toString() === 'Invalid Date') {throw 'Invalid logged hours';}
   if (time.getTime() < 0) {throw 'Cannot log a negative number of hours';}
 
+  // Create location metadata string
+  let location: string;
+  if (inShop === undefined) {
+    location = 'Unknown';
+  } else {
+    location = inShop ? 'Shop' : 'Virtual'
+  }
+
   // Send date object to cell in format [HH:MM:SS]
   logCell.setValue(formatElapsedTime(time));
 
-  // Send metadata to cell note in new line in format 'Logged [HH:MM:SS] from [callStack] for:\n[metadata]'
+  // Send metadata to cell note in new line in format '[location] [HH:MM:SS] from [callStack] for:\n[metadata]'
   logCell.setNote(
     logCell.getNote() + '\n\n'
-    + `Logged ${formatElapsedTime(elapsed)} from ${callStack} for:\n`
+    + `${location} ${formatElapsedTime(elapsed)} from ${callStack} for:\n`
     + formatMetadata(metadata)
   );
 
@@ -125,7 +133,7 @@ function checkIn(rowIndex: number): void {
 }
 
 // If a row is checked in, checks it out and logs the elapsed time and metadata
-function checkOut(rowIndex: number, metadata: string): void {
+function checkOut(rowIndex: number, inShop: boolean, metadata: string): void {
   const checkInTime: any = resultSheet.getRange(rowIndex, checkInColIndex).getValue();
   // Check that the member is checked in
   if (checkInTime !== '') {
@@ -133,6 +141,7 @@ function checkOut(rowIndex: number, metadata: string): void {
     addHours(
       rowIndex,
       new Date(Date.now() - checkInTime.getTime()),
+      inShop,
       'checkin ' + timeDateFormatter.format(checkInTime),
       metadata
     );
@@ -151,6 +160,7 @@ function timeout(rowIndex: number): void {
     addHours(
       rowIndex,
       timeoutReturnTime,
+      undefined,
       'checkin ' + timeDateFormatter.format(checkInTime),
       'Timeout'
     );
@@ -235,9 +245,9 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
   }
 
   // If inputting to the form and has been checked in, add hours and metadata and remove check-in
-  checkOut(index + firstDataRowIndex, metadata);
+  checkOut(index + firstDataRowIndex, input.endsWith('shop'), metadata);
   // If checking in, add timestamp to sheet
-  if (input === 'In') {
+  if (input.startsWith('In')) {
     checkIn(index + firstDataRowIndex);
   }
 }

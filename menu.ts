@@ -99,6 +99,7 @@ function adminCheckIn(): void {
 
     checkOut(
       rowIndex,
+      undefined,
       'Admin nt: ' + formatMetadata(metadata.getResponseText())
     );
   }
@@ -131,6 +132,7 @@ function adminCheckOut(): void {
   // Check out with admin-provided metadata
   checkOut(
     rowIndex,
+    undefined,
     'Admin nt: ' + formatMetadata(metadata.getResponseText())
   );
 
@@ -156,6 +158,7 @@ function adminModifyHours() {
   addHours(
     members.indexOf(id) + firstDataRowIndex,
     modifier,
+    undefined,
     'admin',
     'Admin nt: ' + formatMetadata(metadata.getResponseText())
   );
@@ -184,6 +187,7 @@ function adminResetTimeouts(): void {
       addHours(
         i + firstDataRowIndex,
         new Date(Date.now() - val.getTime()),
+        undefined,
         'checkin ' + timeDateFormatter.format(val),
         'Admin timeout reset'
       );
@@ -217,6 +221,7 @@ function adminTimeoutMember(): void {
   addHours(
     rowIndex,
     timeoutReturnTime,
+    undefined,
     'checkin ' + timeDateFormatter.format(checkInCell.getValue()),
     'Admin timeout nt: ' + formatMetadata(ui.prompt('Timeout notes', id + '\nReason for timeout', ui.ButtonSet.OK).getResponseText())
   );
