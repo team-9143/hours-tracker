@@ -45,7 +45,7 @@ function colIndexFromSelection(): number {
   let colIndex: number = SpreadsheetApp.getActiveRange().getColumn();
 
   // Limit the selected column to valid ones
-  colIndex = Math.max(colIndex, currentWeekColIndex);
+  Math.max(colIndex, currentWeekColIndex)
 
   return colIndex;
 }
@@ -142,8 +142,9 @@ function adminCheckOut(): void {
 function adminModifyHours() {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const id: string = resultSheet.getRange(rowIndexFromSelection(), addressColIndex).getDisplayValue();
-  const week: string = resultSheet.getRange(headerRowIndex, colIndexFromSelection()).getDisplayValue();
+  const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndexFromSelection(), colIndexFromSelection());
+  const id: string = logCell.getDisplayValue();
+  const week: string = resultSheet.getRange(headerRowIndex, logCell.getColumn()).getDisplayValue();
   const modifier = hoursFromInput('Amend Hours', id);
 
   const metadata: Base.PromptResponse = ui.prompt('Modification notes', `${id} for week of ${week}\n${formatElapsedTime(modifier)}\nProjects/tasks worked on`, ui.ButtonSet.OK_CANCEL);
