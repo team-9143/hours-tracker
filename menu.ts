@@ -40,14 +40,12 @@ function rowIndexFromSelection(): number {
   return rowIndex;
 }
 
-// Get the week column index from the current selected cell
+// Get the week column index from the current selected cell (defaults to current week)
 function colIndexFromSelection(): number {
   let colIndex: number = SpreadsheetApp.getActiveRange().getColumn();
 
-  // Check that selected column is valid for operations
-  if (colIndex < currentWeekColIndex) {
-    throw 'Invalid selection, select a column with a weekly hour entry';
-  }
+  // Limit the selected column to valid ones
+  colIndex = Math.max(colIndex, currentWeekColIndex);
 
   return colIndex;
 }
