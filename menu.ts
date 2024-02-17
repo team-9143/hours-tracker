@@ -40,14 +40,12 @@ function rowIndexFromSelection(): number {
   return rowIndex;
 }
 
-// Get the week column index from the current selected cell
+// Get the week column index from the current selected cell (defaults to current week)
 function colIndexFromSelection(): number {
   let colIndex: number = SpreadsheetApp.getActiveRange().getColumn();
 
-  // Check that selected column is valid for operations
-  if (colIndex < currentWeekColIndex) {
-    throw 'Invalid selection, select a column with a weekly hour entry';
-  }
+  // Limit the selected column to valid ones
+  Math.max(colIndex, currentWeekColIndex)
 
   return colIndex;
 }
@@ -144,10 +142,12 @@ function adminCheckOut(): void {
 function adminModifyHours() {
   updateVars();
   const ui: Base.Ui = SpreadsheetApp.getUi();
-  const id: string = resultSheet.getRange(rowIndexFromSelection(), addressColIndex).getDisplayValue();
+  const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndexFromSelection(), colIndexFromSelection());
+  const id: string = logCell.getDisplayValue();
+  const week: string = resultSheet.getRange(headerRowIndex, logCell.getColumn()).getDisplayValue();
   const modifier = hoursFromInput('Amend Hours', id);
 
-  const metadata: Base.PromptResponse = ui.prompt('Modification notes', `${id}\n${formatElapsedTime(modifier)}\nProjects/tasks worked on`, ui.ButtonSet.OK_CANCEL);
+  const metadata: Base.PromptResponse = ui.prompt('Modification notes', `${id} for week of ${week}\n${formatElapsedTime(modifier)}\nProjects/tasks worked on`, ui.ButtonSet.OK_CANCEL);
 
   // Check for user-side cancelation
   if (metadata.getSelectedButton() !== ui.Button.OK) {
@@ -242,7 +242,7 @@ function adminExemptFromWeek(): void {
   const logCell: Spreadsheet.Range = resultSheet.getRange(rowIndexFromSelection(), colIndexFromSelection());
   const id: string = resultSheet.getRange(logCell.getRow(), addressColIndex).getDisplayValue();
   const week: string = resultSheet.getRange(headerRowIndex, logCell.getColumn()).getDisplayValue();
-  const target: Date = hoursFromInput('Target Hours (please fill out after end of week)', `${id} for week of ${week}`);
+  const target: Date = hoursFromInput('Target Hours (please fill out at the end of the week)', `${id} for week of ${week}`);
 
   // Create date object with a minimum of target time
   // Interpreting the display value here is more coherent than the literal cell value
@@ -282,7 +282,7 @@ function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   SpreadsheetApp.getUi().createMenu('Admin Settings')
     .addItem('Check in selected row', 'adminCheckIn')
     .addItem('Check out selected row', 'adminCheckOut')
-    .addItem('Amend hours for selected row', 'adminModifyHours')
+    .addItem('Amend hours for selected cell', 'adminModifyHours')
     .addItem('Reset timeouts', 'adminResetTimeouts')
     .addItem('Timeout selected row', 'adminTimeoutMember')
     .addItem('Exempt selected cell', 'adminExemptFromWeek')
